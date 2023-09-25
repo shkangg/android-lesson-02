@@ -1,56 +1,44 @@
 package kr.easw.lesson02.controller;
 
-import kr.easw.lesson02.model.dto.AWSKeyDto;
 import kr.easw.lesson02.service.AWSService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
-import java.util.List;
-
-@RestController
+@Controller
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/rest/aws")
-public class AWSConroller {
+public class BaseWebController {
     private final AWSService awsController;
 
-    @PostMapping("/auth")
-    private ModelAndView onAuth(AWSKeyDto awsKey) {
-        try {
-            awsController.initAWSAPI(awsKey);
-            return new ModelAndView("redirect:/");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ModelAndView("redirect:/server-error?errorStatus=" + ex.getMessage());
+    @RequestMapping("/")
+    public ModelAndView onIndex() {
+        if (awsController.isInitialized()) {
+            return new ModelAndView("upload.html");
         }
+        return new ModelAndView("request_aws_key.html");
     }
 
-    @GetMapping("/list")
-    private List<String> onFileList() {
-        return awsController.getFileList();
+    @RequestMapping("/server-error")
+    public ModelAndView onErrorTest() {
+        return new ModelAndView("error.html");
     }
 
-    @PostMapping("/upload")
-    private ModelAndView onUpload(@RequestParam MultipartFile file) {
-        try {
-            awsController.upload(file);
-            return new ModelAndView("redirect:/?success=true");
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return new ModelAndView("redirect:/server-error?errorStatus=" + ex.getMessage());
+
+    @RequestMapping("/upload")
+    public ModelAndView onUpload() {
+        if (awsController.isInitialized()) {
+            return new ModelAndView("upload.html");
         }
+        return new ModelAndView("request_aws_key.html");
     }
 
-
-    @PostMapping("/download")
-    private ModelAndView onDownload(@RequestParam String fileName) {
-        try {
-           // 이곳에 파일 다운로드 로직, 혹은 서비스를 통한 다운로드 호출을 구현하십시오.
-           throw new IllegalStateException("기능이 구현되지 않았습니다.");
-        } catch (Throwable e) {
-            return new ModelAndView("redirect:/server-error?errorStatus=" + e.getMessage());
+    @RequestMapping("/download")
+    public ModelAndView onDownload() {
+        if (awsController.isInitialized()) {
+            return new ModelAndView("download.html");
         }
+        return new ModelAndView("request_aws_key.html");
     }
-
 }
